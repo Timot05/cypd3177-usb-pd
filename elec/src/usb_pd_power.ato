@@ -1,0 +1,45 @@
+from "generics/interfaces.ato" import Power, USB_PD, I2C, Pair
+from "generics/regulators.ato" import Buck, LDO
+from "generics/resistors.ato" import Resistor
+from "cypd3177-usb-pd.ato" import ConfiguredCYPD3177Kit
+
+from "lv2842xlvddcr/lv2842kit.ato" import LV2842Kit
+from "ams1117-33/elec/src/ams1117-33.ato" import AMS111733
+
+module UsbPdPower:
+    usb_pd_in = new USB_PD
+
+    #TODO: add usb out
+
+    power_out_hv = new Power
+    power_out_5v = new Power
+    power_out_3v3 = new Power
+
+    usb_pd_device = new ConfiguredCYPD3177Kit
+    usb_pd_in ~ usb_pd_device.usb_pd_in
+    usb_pd_device.power_out_hv ~ power_out_hv
+
+    buck = new Buck
+    buck.v_in = 6V to 20V
+    buck.v_out = 5V +/- 10%
+    usb_pd_device.power_out_hv ~ buck.power_in
+    buck.power_out ~ power_out_5v
+
+    buck -> LV2842Kit
+
+    ldo = new LDO
+    ldo.v_out = 3.3V +/- 10%
+    buck.power_out ~ ldo.power_in
+    jumper = new Jumper
+    usb_pd_device.power_out_safe ~ jumper.power_in; jumper.power_out ~ ldo.power_in
+    ldo.power_out ~ power_out_3v3
+
+    ldo -> AMS111733
+
+module Jumper from Resistor:
+    power_in = new Power
+    power_out = new Power
+    power_in.gnd ~ power_out.gnd
+    package = "0805"
+    value = 0ohm
+    power_in.vcc ~ p1; p2 ~ power_out.vcc

@@ -1,35 +1,22 @@
 from "generics/interfaces.ato" import Power, USB_PD, I2C, Pair
 from "CYPD3177_24LQXQ_C2959321.ato" import CYPD3177_24LQXQ_C2959321
 from "generics/capacitors.ato" import Capacitor
-from "generics/resistors.ato" import Resistor
+from "generics/resistors.ato" import Resistor, I2CPullup
 from "generics/leds.ato" import LEDIndicatorRed
 from "_2N7002KW_R1_00001.ato" import NChannelFet
-from "generics/vdivs.ato" import _VDiv
+from "generics/vdivs.ato" import VDiv
 
-module Cypd3177UsbPd:
-    usb_pd_in = new USB_PD
+from "load_switches.ato" import LoadSwitch100W, LoadSwitch
 
-    #TODO: add usb out
 
-    power_out_hv = new Power
-    power_out_5v = new Power
-    power_out_3v3 = new Power
+module ConfiguredCYPD3177Kit from CYPD3177Kit:
+    vbus_min_vdiv.v_out = 0.249V to 0.786V # 9V minimum
+    vbus_max_vdiv.v_out = 2.779V to 3.3V # 20V minimum
+    vbus_fine_vdiv.v_out = 2.779V to 3.3V # 20A current
+    vbus_coarse_vdiv.v_out = 0V to 0.249V # +0A fine current
 
-    usb_pd_device = new CYPD3177Kit
-    usb_pd_in ~ usb_pd_device.usb_pd_in
-    usb_pd_device.power_out_hv ~ power_out_hv
-    # Switch for the configured version
-    usb_pd_device -> ConfiguredCYPD3177Kit
-
-    buck = new Buck
-    usb_pd_device.power_out_hv ~ buck.power_in
-    buck.power_out ~ power_out_5v
-
-    ldo = new LDO
-    buck.power_out ~ ldo.power_in
-    usb_pd_device.power_out_safe ~ ldo.power_in
-    ldo.power_out ~ power_out_3v3
-
+    # Somehow the solver can't figure out to use a zero ohm resistor
+    vbus_coarse_vdiv.r_bottom.value = 0ohm
 
 module CYPD3177Kit:
     usb_pd_in = new USB_PD
@@ -41,6 +28,17 @@ module CYPD3177Kit:
     power_out_safe = new Power
 
     cypd3177_ic = new CYPD3177_24LQXQ_C2959321
+
+    load_switch = new LoadSwitch100W
+    vbus_in ~ load_switch.power_in
+    load_switch.power_out ~ power_out_hv
+    load_switch.en ~ cypd3177_ic.VBUS_FET_EN
+
+    load_switch_safe = new LoadSwitch
+    vbus_in ~ load_switch_safe.power_in
+    load_switch_safe.power_out ~ power_out_safe
+    load_switch_safe.en ~ cypd3177_ic.SAFE_PWR_EN
+
     usb_pd_in.cc1 ~ cypd3177_ic.CC1
     usb_pd_in.cc2 ~ cypd3177_ic.CC2
 
@@ -64,64 +62,42 @@ module CYPD3177Kit:
     vbus_in ~ bypass_cap_input.power
 
     flip_resistor = new Resistor
-    flip_resistor.value = 4.7kohm +/- 1%
+    flip_resistor.value = 4.7kohm +/- 5%
     cypd3177_ic.FLIP ~ flip_resistor.p1
     cypd3177_ic.internal_reg_3v3.vcc ~ flip_resistor.p2
 
     #i2c bus
     i2c = new I2C
-    sda_pullup_res = new Resistor
-    scl_pullup_res = new Resistor
-    sda_pullup_res.value = 2.2kohm +/- 10%
-    scl_pullup_res.value = 2.2kohm +/- 10%
-    cypd3177_ic.internal_reg_3v3.vcc ~ sda_pullup_res.p1
-    cypd3177_ic.internal_reg_3v3.vcc ~ scl_pullup_res.p1
-    i2c.sda ~ sda_pullup_res.p2
-    i2c.scl ~ scl_pullup_res.p2
+    pullup_i2c = new I2CPullup
+    i2c ~ pullup_i2c.i2c
+    cypd3177_ic.internal_reg_3v3 ~ pullup_i2c.power
     i2c ~ cypd3177_ic.i2c
 
     led_indicator = new LEDIndicatorKit
-    led_indicator.led.v_in = 5V
+    led_indicator.led.v_in = 5V +/- 20%
     cypd3177_ic.fault ~ led_indicator.enable
     vbus_in ~ led_indicator.power_in
 
-module ConfiguredCYPD3177Kit from CYPD3177Kit:
     #vbus setting
-    # Requesting 9V min
-    vbus_min_vdiv = new _VDiv
-    vbus_min_vdiv.r_top = 5.1kohm +/- 5%
-    vbus_min_vdiv.r_bottom = 1kohm +/- 5%
+    vbus_min_vdiv = new VDiv
+    vbus_min_vdiv.v_in = 3.3V +/- 1%
     vbus_min_vdiv.power ~ cypd3177_ic.internal_reg_3v3
     vbus_min_vdiv.out ~ cypd3177_ic.VBUS_MIN
 
-    # Requesting 20V max
-    vbus_max_vdiv = new _VDiv
-    vbus_max_vdiv.r_top = 0ohm to 1ohm
-    vbus_max_vdiv.r_bottom.mpn = "dnp"
-    vbus_max_vdiv.r_bottom.value = 1kohm +/- 20%
+    vbus_max_vdiv = new VDiv
+    vbus_max_vdiv.v_in = 3.3V +/- 1%
     vbus_max_vdiv.power ~ cypd3177_ic.internal_reg_3v3
     vbus_max_vdiv.out ~ cypd3177_ic.VBUS_MAX
 
-    vbus_fine_vdiv = new _VDiv
-    vbus_fine_vdiv.r_top = 5.1kohm +/- 5%
-    vbus_fine_vdiv.r_bottom.value = 2.4kohm +/- 5%
+    vbus_fine_vdiv = new VDiv
+    vbus_fine_vdiv.v_in = 3.3V +/- 1%
     vbus_fine_vdiv.power ~ cypd3177_ic.internal_reg_3v3
     vbus_fine_vdiv.out ~ cypd3177_ic.ISNK_COARSE
 
-    vbus_coarse_vdiv = new _VDiv
-    #vbus_coarse_vdiv.r_top = 5.1kohm +/- 5%
-    vbus_coarse_vdiv.r_top.mpn = "dnp"
-    vbus_coarse_vdiv.r_bottom.value = 0ohm +/- 5%
+    vbus_coarse_vdiv = new VDiv
+    vbus_coarse_vdiv.v_in = 3.3V +/- 1%
     vbus_coarse_vdiv.power ~ cypd3177_ic.internal_reg_3v3
     vbus_coarse_vdiv.out ~ cypd3177_ic.ISNK_FINE
-
-module LDO:
-    power_in = new Power
-    power_out = new Power
-
-module Buck:
-    power_in = new Power
-    power_out = new Power
 
 
 module LEDIndicatorKit:

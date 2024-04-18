@@ -4,6 +4,7 @@ component CYPD3177_24LQXQ_C2959321:
     # component CYPD3177_24LQXQ_C2959321
     footprint = "TQFN-24_L4.0-W4.0-P0.50-TL-EP2.8"
     lcsc_id = "C2959321"
+    mpn = "C2959321"
     # pins
     signal VBUS_MIN ~ pin 1
     signal VBUS_MAX ~ pin 2
