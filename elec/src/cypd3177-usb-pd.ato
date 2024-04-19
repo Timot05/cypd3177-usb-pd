@@ -62,6 +62,7 @@ module CYPD3177Kit:
     vbus_in ~ bypass_cap_input.power
 
     flip_resistor = new Resistor
+    flip_resistor.package = "0402"
     flip_resistor.value = 4.7kohm +/- 5%
     cypd3177_ic.FLIP ~ flip_resistor.p1
     cypd3177_ic.internal_reg_3v3.vcc ~ flip_resistor.p2

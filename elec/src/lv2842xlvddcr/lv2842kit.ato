@@ -2,7 +2,6 @@ import SchottkyDiode from "generics/diodes.ato"
 import Capacitor from "generics/capacitors.ato"
 import Inductor from "generics/inductors.ato"
 import Buck from "generics/regulators.ato"
-import LV2842XLVDDCR from "elec/src/lv2842xlvddcr.ato"
 
 module LV2842Kit from Buck:
     """
@@ -18,6 +17,13 @@ module LV2842Kit from Buck:
     output_cap = new Capacitor
     inductor = new Inductor
     boot_cap = new Capacitor
+
+    v_in = 5V to 15V
+    v_out = 3.3V +/- 10%
+
+    # Select deafult components
+    diode -> Diode_1N5819WS
+    inductor -> SWPA4030S100MT
 
     v_ref = 0.765V
     assert v_in within 4.5V to 42V
@@ -37,7 +43,7 @@ module LV2842Kit from Buck:
     boot_cap.voltage = 16V to 100V
     boot_cap.package = "0402"
     boot_cap.1 ~ ic.CB
-    boot_cap.2 ~ ic.VIN
+    boot_cap.2 ~ ic.SW
 
 
     feedback_div.in ~ power_out
@@ -53,12 +59,10 @@ module LV2842Kit from Buck:
     output_cap.value = 10uF +/- 20%
     output_cap.voltage = 16V to 100V
     output_cap.esr = 0.1ohm to 0.2ohm
+    output_cap.package = "0805"
 
     # Inductor
     ic.SW ~ inductor.1; inductor.2 ~ power_out.vcc
-    inductor.inductance = 10uH to 11uH
-    inductor.mpn = "dnp"
-    inductor.footprint = "0805"
 
     f_switching = 0.5MHz
     i_ripple = 0.2A to 0.3A # typically ~ 30% of Iout
@@ -71,9 +75,39 @@ module LV2842Kit from Buck:
 
     # Diode
     diode.anode ~ power_out.gnd
-    diode.mpn = "dnp"
-    diode.footprint = "SOD-123"
     diode.cathode ~ ic.SW
-    diode.average_rectified_current = 1A to 10A
-    diode.forward_voltage = 0.3V to 0.8V
-    diode.reverse_voltage = 30V to 100V
+
+
+component Diode_1N5819WS from SchottkyDiode:
+    # component 1N5819WS
+    footprint = "SOD-323_L1.8-W1.3-LS2.5-RD"
+    lcsc_id = "C191023"
+    mpn = "C191023"
+    # pins
+    cathode ~ pin 1
+    anode ~ pin 2
+
+component SWPA4030S100MT from Inductor:
+    # component SWPA4030S100MT
+    footprint = "IND-SMD_L4.0-W4.0"
+    # footprint = "R0805" # FIXME: Hack to link design, switch me back!
+    lcsc_id = "C38117"
+    mpn = "C38117"
+    inductance = 10uH +/- 20%
+    # pins
+    signal p2 ~ pin 2
+    signal p1 ~ pin 1
+
+component LV2842XLVDDCR:
+    # component LV2842XLVDDCR
+    footprint = "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR"
+    lcsc_id = "C225807"
+    description = "0.6A, 42V, 1.1MHz Buck Regulator"
+    mpn = "C225807"
+    # pins
+    signal CB ~ pin 1
+    signal GND ~ pin 2
+    signal FB ~ pin 3
+    signal SHDN_ ~ pin 4
+    signal VIN ~ pin 5
+    signal SW ~ pin 6

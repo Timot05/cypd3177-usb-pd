@@ -2,16 +2,22 @@ ato-version: ^0.2.39
 builds:
   default:
     entry: elec/src/usb_pd_power.ato:UsbPdPower
+  cypd3177kit:
+    entry: elec/src/cypd3177kit.ato:Cypd3177kit
 dependencies:
 - name: generics
   version_spec: '@09ad6baeaab93d53b9b6c90069ac750f4161d76f'
   link_broken: true
   path: elec/src/generics
 - name: lv2842xlvddcr
-  version_spec: '@8f0fb2a530a8c099d95e9c9005bdb9a5f7dffe97'
+  version_spec: '@63615f935a2727e9b8d55e61e7fb02d444641778'
   link_broken: true
   path: elec/src/lv2842xlvddcr
 - name: ams1117-33
   version_spec:
   link_broken: true
   path: elec/src/ams1117-33
+- name: usb-connectors
+  version_spec: '@53496dede5b600bd799a0afe199eaa514ebdc5f6'
+  link_broken: true
+  path: elec/src/usb-connectors

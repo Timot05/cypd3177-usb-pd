@@ -8,9 +8,12 @@ component BZT52C10 from ZenerDiode:
     """
 
     # component BZT52C10
-    footprint = "D_SOD-123F"
+    footprint = "SOD-123_L2.7-W1.7-LS3.8-RD"
     lcsc_id = "C2891778"
     mpn = "C2891778"
 
     signal input ~ anode
     signal output ~ cathode
+
+    pin 1 ~ cathode
+    pin 2 ~ anode

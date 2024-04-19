@@ -1,0 +1,12 @@
+component Header_Male_2_54_1x6:
+    # component Header_Male_2_54_1x6
+    footprint = "HDR-TH_6P-P2.54-V-M-1"
+    lcsc_id = "C37208"
+    # pins
+    signal p1 ~ pin 1
+    signal p2 ~ pin 2
+    signal p3 ~ pin 3
+    signal p4 ~ pin 4
+    signal p5 ~ pin 5
+    signal p6 ~ pin 6
+

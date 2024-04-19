@@ -6,6 +6,7 @@ component Capacitor:
     designator_prefix = "C"
     mpn = "generic_capacitor"
     type = "capacitor"
+    package = "0402"
 
     power = new Power
     power.vcc ~ p1

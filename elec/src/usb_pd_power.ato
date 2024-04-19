@@ -6,8 +6,17 @@ from "cypd3177-usb-pd.ato" import ConfiguredCYPD3177Kit
 from "lv2842xlvddcr/lv2842kit.ato" import LV2842Kit
 from "ams1117-33/elec/src/ams1117-33.ato" import AMS111733
 
+from "usb-connectors/usb-connectors.ato" import USBCConn
+
+from "Header_Male_2_54_1x6.ato" import Header_Male_2_54_1x6
+
 module UsbPdPower:
+    usb_c = new USBCConn
     usb_pd_in = new USB_PD
+    usb_c.conn.CC1 ~ usb_pd_in.cc1
+    usb_c.conn.CC2 ~ usb_pd_in.cc2
+    usb_c.power.vcc ~ usb_pd_in.vbus
+    usb_c.power.gnd ~ usb_pd_in.gnd
 
     #TODO: add usb out
 
@@ -35,6 +44,14 @@ module UsbPdPower:
     ldo.power_out ~ power_out_3v3
 
     ldo -> AMS111733
+
+    header = new Header_Male_2_54_1x6
+    power_out_hv.gnd ~ header.p1
+    power_out_hv.vcc ~ header.p2
+    power_out_5v.vcc ~ header.p3
+    power_out_3v3.vcc ~ header.p4
+    usb_pd_device.i2c.sda ~ header.p5
+    usb_pd_device.i2c.scl ~ header.p6
 
 module Jumper from Resistor:
     power_in = new Power
