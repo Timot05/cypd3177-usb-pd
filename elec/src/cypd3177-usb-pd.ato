@@ -11,16 +11,14 @@ from "load_switches.ato" import LoadSwitch100W, LoadSwitch
 
 module ConfiguredCYPD3177Kit from CYPD3177Kit:
     vbus_min_vdiv.v_out = 0.249V to 0.786V # 9V minimum
-    vbus_max_vdiv.v_out = 2.779V to 3.3V # 20V minimum
-    vbus_fine_vdiv.v_out = 2.779V to 3.3V # 20A current
+    vbus_max_vdiv.v_out = 2.779V to 3.3V # 20V maximum
+    vbus_fine_vdiv.v_out = 2.779V to 3.3V # 5A current
     vbus_coarse_vdiv.v_out = 0V to 0.249V # +0A fine current
 
     # Somehow the solver can't figure out to use a zero ohm resistor
     vbus_coarse_vdiv.r_bottom.value = 0ohm
 
 module CYPD3177Kit:
-    #TODO: connect the dp/dn lines
-    #TODO: there are multiple grounds to check
     usb_pd_in = new USB_PD
     vbus_in = new Power
     usb_pd_in.vbus ~ vbus_in.vcc
@@ -30,6 +28,7 @@ module CYPD3177Kit:
     power_out_safe = new Power
 
     cypd3177_ic = new CYPD3177_24LQXQ_C2959321
+    cypd3177_ic.usb_pd ~ usb_pd_in
 
     load_switch = new LoadSwitch100W
     vbus_in ~ load_switch.power_in
@@ -40,11 +39,6 @@ module CYPD3177Kit:
     vbus_in ~ load_switch_safe.power_in
     load_switch_safe.power_out ~ power_out_safe
     load_switch_safe.en ~ cypd3177_ic.SAFE_PWR_EN
-
-    usb_pd_in.cc1 ~ cypd3177_ic.CC1
-    usb_pd_in.cc2 ~ cypd3177_ic.CC2
-
-    vbus_in ~ cypd3177_ic.vbus_in
 
     bypass_cap_1 = new Capacitor
     bypass_cap_2 = new Capacitor

@@ -1,4 +1,4 @@
-from "generics/interfaces.ato" import Power, I2C, Pair
+from "generics/interfaces.ato" import Power, I2C, Pair, USB_PD
 
 component CYPD3177_24LQXQ_C2959321:
     # component CYPD3177_24LQXQ_C2959321
@@ -51,3 +51,9 @@ component CYPD3177_24LQXQ_C2959321:
     fault = new Pair
     fault.io ~ FAULT
     fault.gnd ~ GND
+
+    usb_pd = new USB_PD
+    usb_pd.gnd ~ GND
+    usb_pd.vbus ~ VBUS_IN
+    usb_pd.cc1 ~ CC1
+    usb_pd.cc2 ~ CC2

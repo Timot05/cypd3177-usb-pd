@@ -1,9 +1,8 @@
 import Power from "generics/interfaces.ato"
-import HSM4805 from "HSM4805.ato"
 import Resistor from "generics/resistors.ato"
 import Capacitor from "generics/capacitors.ato"
-import BZT52C10 from "BZT52C10.ato"
 import _VDiv from "generics/vdivs.ato"
+import ZenerDiode from "generics/diodes.ato"
 
 
 module LoadSwitch100W:
@@ -20,7 +19,7 @@ module LoadSwitch100W:
 
     # Add the Load Switch for up to 100W output
     # This dual MOSFET connects VBUS to VDC_OUT, if USB PD can be negotiated successfully
-    load_switch_mosfet = new HSM4805
+    load_switch_mosfet = new _HSM4805
     load_switch_mosfet.GATE1 ~ load_switch_mosfet.GATE2
     load_switch_mosfet.SOURCE1 ~ load_switch_mosfet.SOURCE2
     load_switch_mosfet.DRAIN1 ~ power_in.vcc
@@ -52,7 +51,7 @@ module LoadSwitch100W:
     fet_src_gate_resistor.p2 ~ load_switch_mosfet.GATE1
 
     # Add a zener diode for between the source and the gate of the load_switch_mosfet
-    esd_protection_fet_src_gate_zener_diode = new BZT52C10
+    esd_protection_fet_src_gate_zener_diode = new _BZT52C10
     esd_protection_fet_src_gate_zener_diode.input ~ load_switch_mosfet.SOURCE1
     esd_protection_fet_src_gate_zener_diode.output ~ load_switch_mosfet.GATE1
 
@@ -97,3 +96,35 @@ component AO3401A:
     signal DRAIN ~ pin 3
     signal GATE ~ pin 1
     signal SOURCE ~ pin 2
+
+component _HSM4805:
+    # component HSM4805
+    footprint = "SOP-8_L4.9-W3.9-P1.27-LS6.0-BL"
+    lcsc_id = "C700973"
+    # pins
+    signal SOURCE1 ~ pin 1
+    signal GATE1 ~ pin 2
+    signal SOURCE2 ~ pin 3
+    signal GATE2 ~ pin 4
+    signal DRAIN2 ~ pin 5
+    DRAIN2 ~ pin 6
+    signal DRAIN1 ~ pin 7
+    DRAIN1 ~ pin 8
+
+component _BZT52C10 from ZenerDiode:
+    """
+    This is a zener diode in the SOD-123F package.
+    A zener diode is a diode that allows current to flow in the forward direction in the same manner as an ideal diode, but also permits it to flow in the reverse direction when the voltage is above a certain value, known as the breakdown voltage.
+    Datasheet: https://datasheet.lcsc.com/lcsc/2109011130_YONGYUTAI-BZT52C10_C2891778.pdf
+    """
+
+    # component BZT52C10
+    footprint = "SOD-123_L2.7-W1.7-LS3.8-RD"
+    lcsc_id = "C2891778"
+    mpn = "C2891778"
+
+    signal input ~ anode
+    signal output ~ cathode
+
+    pin 1 ~ cathode
+    pin 2 ~ anode
