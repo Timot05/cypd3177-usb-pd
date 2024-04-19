@@ -19,6 +19,8 @@ module ConfiguredCYPD3177Kit from CYPD3177Kit:
     vbus_coarse_vdiv.r_bottom.value = 0ohm
 
 module CYPD3177Kit:
+    #TODO: connect the dp/dn lines
+    #TODO: there are multiple grounds to check
     usb_pd_in = new USB_PD
     vbus_in = new Power
     usb_pd_in.vbus ~ vbus_in.vcc

@@ -59,4 +59,5 @@ module Jumper from Resistor:
     power_in.gnd ~ power_out.gnd
     package = "0805"
     value = 0ohm
+    mpn = "dnp"
     power_in.vcc ~ p1; p2 ~ power_out.vcc
