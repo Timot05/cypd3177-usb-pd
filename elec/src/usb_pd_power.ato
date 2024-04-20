@@ -18,8 +18,6 @@ module UsbPdPower:
     usb_c.power.vcc ~ usb_pd_in.vbus
     usb_c.power.gnd ~ usb_pd_in.gnd
 
-    #TODO: add usb out
-
     power_out_hv = new Power
     power_out_5v = new Power
     power_out_3v3 = new Power

@@ -28,7 +28,7 @@ module CYPD3177Kit:
     power_out_safe = new Power
 
     cypd3177_ic = new CYPD3177_24LQXQ_C2959321
-    cypd3177_ic.usb_pd ~ usb_pd_in
+    usb_pd_in ~ cypd3177_ic.usb_pd
 
     load_switch = new LoadSwitch100W
     vbus_in ~ load_switch.power_in
